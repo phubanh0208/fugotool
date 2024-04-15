@@ -2,6 +2,10 @@
   "name": "webp",
   "version": "1.0.0",
   "description": "",
+  "engines": {
+    "npm": "10.1.0",
+    "node": "20.3.0"
+  },
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
