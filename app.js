@@ -40,7 +40,15 @@ app.post('/convert', upload.array('img', 10), async (req, res) => {
                 }
 
                 // Giảm chất lượng ảnh
-                quality -= 2; // Giảm chất lượng xuống 5 đơn vị sau mỗi lần lặp
+                if (sizeInKB >= 200) {
+                    quality -= 10; // Giảm chất lượng xuống 5 đơn vị sau mỗi lần lặp
+                } else
+                if (sizeInKB >= 150) {
+                    quality -= 5; // Giảm chất lượng xuống 5 đơn vị sau mỗi lần lặp
+                } else {
+                    quality -= 2; // Giảm chất lượng xuống 5 đơn vị sau mỗi lần lặp
+                }
+               
             } while (quality >= 5); // Lặp lại cho đến khi chất lượng giảm đến mức tối thiểu là 5
 
             return null;
