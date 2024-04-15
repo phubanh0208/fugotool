@@ -74,6 +74,6 @@ app.post('/convert', upload.array('img', 10), async (req, res) => {
 
 
 
-app.listen(port, () => {
+app.listen(process.env.PORT || 3000, () => {
     console.log(`Ứng dụng đang chạy tại http://localhost:${port}`);
 });
