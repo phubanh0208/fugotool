@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Converter</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <h1>Image Converter</h1>
+    <form id="uploadForm" action="/convert" method="post" enctype="multipart/form-data">
+        <input type="file" name="img" id="imgInput" accept="image/*" multiple required>
+        <button type="submit">Chuyển đổi và Tải về</button>
+    </form>
+
+    <div id="downloadLinks"></div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            const response = await fetch(this.action, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json(); // Assuming the server sends back an array of converted image URLs
+            const downloadLinksContainer = document.getElementById('downloadLinks');
+            downloadLinksContainer.innerHTML = ''; // Clear existing download links
+            data.forEach((imageUrl, index) => {
+                const downloadLink = document.createElement('a');
+                downloadLink.href = imageUrl;
+                downloadLink.download = `converted_image_${index + 1}.webp`; // Adjust the filename as needed
+                downloadLink.textContent = `Download Image ${index + 1}`;
+                downloadLinksContainer.appendChild(downloadLink);
+                downloadLinksContainer.appendChild(document.createElement('br'));
+            });
+        });
+    </script>
+</body>
+</html>
