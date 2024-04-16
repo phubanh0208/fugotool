@@ -71,7 +71,46 @@ app.post('/convert', upload.array('img', 10), async (req, res) => {
         res.status(500).send('Đã xảy ra lỗi khi chuyển đổi ảnh.');
     }
 });
+app.post('/convert-single', upload.single('img'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).send('No file uploaded.');
+        }
 
+        const buffer = req.file.buffer;
+        let quality = 100; // Khởi tạo chất lượng ảnh là 100
+
+        let webPImage, webPFileName;
+        do {
+            // Giảm chất lượng của ảnh
+            webPImage = await sharp(buffer)
+                .webp({ quality: quality })
+                .toBuffer();
+
+            // Kiểm tra dung lượng của ảnh
+            const sizeInKB = webPImage.length / 1024;
+
+            // Kiểm tra dung lượng ảnh đã chuyển đổi có dưới 100KB chưa
+            if (sizeInKB <= 100) {
+                const originalFileName = req.file.originalname;
+                webPFileName = path.parse(originalFileName).name + '.webp';
+
+                res.set('Content-Disposition', `attachment; filename="${webPFileName}"`);
+                res.set('Content-Type', 'image/webp');
+                res.send(webPImage);
+                return; // Kết thúc vòng lặp nếu dung lượng dưới 100KB
+            }
+
+            // Giảm chất lượng ảnh
+            quality -= 2; // Giảm chất lượng xuống 5 đơn vị sau mỗi lần lặp
+        } while (quality >= 5); // Lặp lại cho đến khi chất lượng giảm đến mức tối thiểu là 5
+
+        res.status(500).send('Không thể giảm dung lượng ảnh xuống dưới 100KB.');
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Đã xảy ra lỗi khi chuyển đổi ảnh.');
+    }
+});
 
 
 app.listen(process.env.PORT || 3000, () => {

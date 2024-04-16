@@ -221,17 +221,26 @@
         <h2><strong>Hướng dẫn sử dụng :</strong></h2>
 <p><strong>B1:</strong> Chọn ảnh, c&oacute; thể chọn nhiều ảnh.</p>
 <p><strong>B2:</strong> Bấm chuyển đổi, đợi trong v&agrave;i gi&acirc;y</p>
-<p><strong>B3:</strong> Sau khi chuyển đổi, sẽ c&oacute; một file .zip được tải về, b&ecirc;n trong chưa c&aacute;c ảnh webp.</p>
+<p><strong>B3:</strong> Sau khi chuyển đổi, nếu up nhiều ảnh sẽ c&oacute; một file .zip được tải về, b&ecirc;n trong chưa c&aacute;c ảnh webp.</p>
 <p><strong>B4:</strong> HẾT.&nbsp;</p>
 
     </div>
-    <form id="uploadForm" action="/convert" method="post" enctype="multipart/form-data">
+    <form id="uploadForm2" action="/convert-single" method="post" enctype="multipart/form-data">
         <div class="mb-3">
             <label for="imgInput" class="form-label">Chọn ảnh để chuyển đổi:</label>
             <input type="file" class="form-control" name="img" id="imgInput" accept="image/*" multiple required>
         </div>
         <button type="submit" class="btn btn-primary">Chuyển đổi sang WebP và Tải về</button>
     </form>
+
+  </div>
+  <form id="uploadForm" action="/convert" method="post" enctype="multipart/form-data">
+      <div class="mb-3">
+          <label for="imgInput" class="form-label">Chọn nhiều ảnh để chuyển đổi:</label>
+          <input type="file" class="form-control" name="img" id="imgInput" accept="image/*" multiple required>
+      </div>
+      <button type="submit" class="btn btn-primary">Chuyển đổi sang WebP và Tải về</button>
+  </form>
     <div id="loading">
         <img src="loading.gif" alt="Loading...">
     </div>
