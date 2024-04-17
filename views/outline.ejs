@@ -300,19 +300,27 @@ document.getElementById('clearFormatting').addEventListener('click', function() 
       // Xác định các thẻ ảnh và loại bỏ chúng
       var editor = document.getElementById('editor');
       document.getElementById('loading').style.display = 'flex';
-
+     // Tạo một HTML div tạm thời để chứa chỉ các thẻ img
+     var tempDiv = document.createElement('div');
+     tempDiv.innerHTML = editor.innerHTML;
+     var images = tempDiv.querySelectorAll('img');
+ 
+     // Tạo một div mới chỉ chứa các thẻ img
+     var newDiv = document.createElement('div');
+     images.forEach(function(img) {
+         newDiv.appendChild(img.cloneNode(true)); // Clone mỗi thẻ img để tránh xóa khỏi editor ban đầu
+     });
+     console.log(newDiv.innerHTML);
       // Tải ảnh xuống và nén thành file zip bằng Node.js
       const response = await fetch('/download-images', {
           method: 'POST',
           headers: {
               'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ htmlContent: editor.innerHTML })
+          body: JSON.stringify({ htmlContent: newDiv.innerHTML })
       });
 
       if (response.ok) {
-        document.getElementById('loading').style.display = 'none';
-
           // Nếu tải xuống thành công, tạo một liên kết để tải file zip
           const blob = await response.blob();
           const url = window.URL.createObjectURL(blob);
@@ -320,6 +328,7 @@ document.getElementById('clearFormatting').addEventListener('click', function() 
           a.href = url;
           a.download = 'images.zip';
           a.click();
+          document.getElementById('loading').style.display = 'none';
 
       } else {
           console.error('Failed to download images');
