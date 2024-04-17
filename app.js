@@ -4,6 +4,8 @@ const sharp = require('sharp');
 const path = require('path');
 const JSZip = require('jszip');
 const fs = require('fs');
+const slugify = require('slugify');
+const getSlug = require('speakingurl');
 
 const app = express();
 const port = (process.env.PORT ||3000);
@@ -29,9 +31,11 @@ app.post('/convert', upload.array('img', 10), async (req, res) => {
         }
 
         const convertedImages = await Promise.all(req.files.map(async (file) => {
+            const lowercaseInput = req.body.slug.toLowerCase(); 
+            const slug = getSlug(lowercaseInput, { lang: 'vi' });
+
             const buffer = file.buffer;
             let quality = 100; // Khởi tạo chất lượng ảnh là 100
-
             let webPImage, webPFileName;
             do {
                 // Giảm chất lượng của ảnh
@@ -45,19 +49,21 @@ app.post('/convert', upload.array('img', 10), async (req, res) => {
                 // Kiểm tra dung lượng ảnh đã chuyển đổi có dưới 100KB chưa
                 if (sizeInKB <= 100) {
                     const originalFileName = file.originalname;
-                    webPFileName = path.parse(originalFileName).name + '.webp';
+                    const index = req.files.indexOf(file);
+
+                    webPFileName = `${slug}-${index + 1}.webp`;
                     return { name: webPFileName, data: webPImage };
                 }
 
                 // Giảm chất lượng ảnh
                 if (sizeInKB >= 300) {
-                    quality -= 20; // Giảm chất lượng xuống 5 đơn vị sau mỗi lần lặp
+                    quality -= 15; // Giảm chất lượng xuống 5 đơn vị sau mỗi lần lặp
                 } else
                 if (sizeInKB >= 200) {
                     quality -= 10; // Giảm chất lượng xuống 5 đơn vị sau mỗi lần lặp
                 } else
                 if (sizeInKB >= 150) {
-                    quality -= 7; // Giảm chất lượng xuống 5 đơn vị sau mỗi lần lặp
+                    quality -= 5; // Giảm chất lượng xuống 5 đơn vị sau mỗi lần lặp
                 } else {
                     quality -= 1; // Giảm chất lượng xuống 5 đơn vị sau mỗi lần lặp
                 }
@@ -89,6 +95,8 @@ app.post('/convert-single', upload.single('img'), async (req, res) => {
         if (!req.file) {
             return res.status(400).send('No file uploaded.');
         }
+        const lowercaseInput = req.body.slug.toLowerCase(); 
+        const slug = getSlug(lowercaseInput, { lang: 'vi' });
 
         const buffer = req.file.buffer;
         let quality = 100; // Khởi tạo chất lượng ảnh là 100
@@ -106,7 +114,7 @@ app.post('/convert-single', upload.single('img'), async (req, res) => {
             // Kiểm tra dung lượng ảnh đã chuyển đổi có dưới 100KB chưa
             if (sizeInKB <= 100) {
                 const originalFileName = req.file.originalname;
-                webPFileName = path.parse(originalFileName).name + '.webp';
+                webPFileName = `${slug}.webp`;
 
                 res.set('Content-Disposition', `attachment; filename="${webPFileName}"`);
                 res.set('Content-Type', 'image/webp');
@@ -117,13 +125,13 @@ app.post('/convert-single', upload.single('img'), async (req, res) => {
             // Giảm chất lượng ảnh
            // Giảm chất lượng ảnh
                 if (sizeInKB >= 300) {
-                    quality -= 20; // Giảm chất lượng xuống 5 đơn vị sau mỗi lần lặp
+                    quality -= 15; // Giảm chất lượng xuống 5 đơn vị sau mỗi lần lặp
                 } else
                 if (sizeInKB >= 200) {
                     quality -= 10; // Giảm chất lượng xuống 5 đơn vị sau mỗi lần lặp
                 } else
                 if (sizeInKB >= 150) {
-                    quality -= 7; // Giảm chất lượng xuống 5 đơn vị sau mỗi lần lặp
+                    quality -= 5; // Giảm chất lượng xuống 5 đơn vị sau mỗi lần lặp
                 } else {
                     quality -= 1; // Giảm chất lượng xuống 5 đơn vị sau mỗi lần lặp
                 }
