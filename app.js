@@ -3,12 +3,22 @@ const multer = require('multer');
 const sharp = require('sharp');
 const path = require('path');
 const JSZip = require('jszip');
+const fs = require('fs');
 
 const app = express();
 const port = (process.env.PORT ||3000);
+app.set('view engine', 'ejs'); // Thay 'ejs' bằng tên của view engine bạn sử dụng
+app.set('views', path.join(__dirname, 'views')); // Đường dẫn tới thư mục chứa các file view
 
 app.use(express.static('public'));
+// Đường dẫn thư mục tạm thời để lưu trữ các ảnh tạm thời
+const tmpDir = __dirname + '/tmp';
 
+// Middleware để xử lý multipart/form-data cho tải ảnh lên
+const upload2 = multer({ dest: tmpDir });
+
+// Middleware để phân tích JSON từ yêu cầu
+app.use(express.json())
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
@@ -40,13 +50,16 @@ app.post('/convert', upload.array('img', 10), async (req, res) => {
                 }
 
                 // Giảm chất lượng ảnh
+                if (sizeInKB >= 300) {
+                    quality -= 20; // Giảm chất lượng xuống 5 đơn vị sau mỗi lần lặp
+                } else
                 if (sizeInKB >= 200) {
                     quality -= 10; // Giảm chất lượng xuống 5 đơn vị sau mỗi lần lặp
                 } else
                 if (sizeInKB >= 150) {
                     quality -= 7; // Giảm chất lượng xuống 5 đơn vị sau mỗi lần lặp
                 } else {
-                    quality -= 1; // Giảm chất lượng xuống 5 đơn vị sau mỗi lần lặp
+                    quality -= 2; // Giảm chất lượng xuống 5 đơn vị sau mỗi lần lặp
                 }
                
             } while (quality >= 5); // Lặp lại cho đến khi chất lượng giảm đến mức tối thiểu là 5
@@ -102,7 +115,18 @@ app.post('/convert-single', upload.single('img'), async (req, res) => {
             }
 
             // Giảm chất lượng ảnh
-            quality -= 2; // Giảm chất lượng xuống 5 đơn vị sau mỗi lần lặp
+           // Giảm chất lượng ảnh
+                if (sizeInKB >= 300) {
+                    quality -= 20; // Giảm chất lượng xuống 5 đơn vị sau mỗi lần lặp
+                } else
+                if (sizeInKB >= 200) {
+                    quality -= 10; // Giảm chất lượng xuống 5 đơn vị sau mỗi lần lặp
+                } else
+                if (sizeInKB >= 150) {
+                    quality -= 7; // Giảm chất lượng xuống 5 đơn vị sau mỗi lần lặp
+                } else {
+                    quality -= 2; // Giảm chất lượng xuống 5 đơn vị sau mỗi lần lặp
+                }
         } while (quality >= 5); // Lặp lại cho đến khi chất lượng giảm đến mức tối thiểu là 5
 
         res.status(500).send('Không thể giảm dung lượng ảnh xuống dưới 100KB.');
@@ -111,8 +135,56 @@ app.post('/convert-single', upload.single('img'), async (req, res) => {
         res.status(500).send('Đã xảy ra lỗi khi chuyển đổi ảnh.');
     }
 });
+// Route để xử lý yêu cầu POST từ máy khách để tải ảnh xuống và nén thành file zip
+app.post('/download-images', upload.none(), async (req, res) => {
+    try {
+        // Lấy nội dung HTML từ yêu cầu
+        const htmlContent = req.body.htmlContent;
 
+        // Tạo một đối tượng JSZip để nén ảnh
+        const zip = new JSZip();
+        const imgRegex = /<img[^>]+src="([^">]+)"/g;
+        let match;
+        let index = 0;
 
+        // Lặp qua các thẻ ảnh và tải chúng xuống
+        while ((match = imgRegex.exec(htmlContent)) !== null) {
+            const imageUrl = match[1];
+            const imageFilename = `image_${index}.png`; // Tên tệp ảnh tạm thời
+            const imagePath = `${tmpDir}/${imageFilename}`;
+
+            // Tải ảnh xuống
+            const response = await fetch(imageUrl);
+            const imageBuffer = await response.arrayBuffer();
+
+            // Lưu ảnh vào thư mục tạm thời
+            fs.writeFileSync(imagePath, Buffer.from(imageBuffer));
+
+            // Thêm ảnh vào file zip
+            zip.file(imageFilename, fs.readFileSync(imagePath));
+
+            index++;
+        }
+
+        // Nén các ảnh thành file zip
+        const zipBuffer = await zip.generateAsync({ type: 'nodebuffer' });
+
+        // Gửi file zip về máy khách
+        res.set('Content-Disposition', 'attachment; filename="images.zip"');
+        res.set('Content-Type', 'application/zip');
+        res.send(zipBuffer);
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('Failed to download and compress images');
+    }
+});
+
+app.get('/outline', (req, res) => {
+    res.render('outline');
+});
+app.get('/', (req, res) => {
+    res.render('index');
+});
 app.listen(process.env.PORT || 3000, () => {
     console.log(`Ứng dụng đang chạy tại http://localhost:${port}`);
 });

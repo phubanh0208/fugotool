@@ -4,37 +4,269 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Converter</title>
-    <link rel="stylesheet" href="/css/style.css">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> 
+    <link rel="icon" href="author.jpg" type="image/x-icon">
+    <style>
+        #loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        #loading img {
+            width: 50em;
+            height: 50em;
+        }
+        #header {
+            background-color: #343a40;
+            color: white;
+            padding: 1em 0;
+        }
+        footer {
+            background-color: #343a40;
+            color: white;
+            text-align: center;
+            padding: 1em 0;
+            bottom: 0;
+            width: 100%;
+        }
+        form {
+            border: 1px solid #dee2e6;
+            padding: 1em;
+            border-radius: 5px;
+            margin-top: 2em;
+        }
+        #author-info {
+            margin-top: 2em;
+            text-align: center;
+        }
+        #author-info img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-bottom: 1em;
+        }
+        h1 {
+            padding-top: 2%;
+            text-align: center;
+        }
+        .content {
+            padding-left: 5%;
+        }
+        .fa {
+            padding: 20px;
+            font-size: 30px;
+            width: 2em;
+            text-decoration: none;
+            margin: 5px 2px;
+            text-align: center;
+
+          }
+          
+          .fa:hover {
+              opacity: 0.7;
+          }
+          
+          .fa-facebook {
+            background: #3B5998;
+            color: white;
+          }
+          
+          .fa-twitter {
+            background: #55ACEE;
+            color: white;
+          }
+          
+          .fa-google {
+            background: #dd4b39;
+            color: white;
+          }
+          
+          .fa-linkedin {
+            background: #007bb5;
+            color: white;
+          }
+          
+          .fa-youtube {
+            background: #bb0000;
+            color: white;
+          }
+          
+          .fa-instagram {
+            background: #ea5b6e;
+            color: white;
+          }
+          
+          .fa-pinterest {
+            background: #cb2027;
+            color: white;
+          }
+          
+          .fa-snapchat-ghost {
+            background: #fffc00;
+            color: white;
+            text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+          }
+          
+          .fa-skype {
+            background: #00aff0;
+            color: white;
+          }
+          
+          .fa-android {
+            background: #a4c639;
+            color: white;
+          }
+          
+          .fa-dribbble {
+            background: #ea4c89;
+            color: white;
+          }
+          
+          .fa-vimeo {
+            background: #45bbff;
+            color: white;
+          }
+          
+          .fa-tumblr {
+            background: #2c4762;
+            color: white;
+          }
+          
+          .fa-vine {
+            background: #00b489;
+            color: white;
+          }
+          
+          .fa-foursquare {
+            background: #45bbff;
+            color: white;
+          }
+          
+          .fa-stumbleupon {
+            background: #eb4924;
+            color: white;
+          }
+          
+          .fa-flickr {
+            background: #f40083;
+            color: white;
+          }
+          
+          .fa-yahoo {
+            background: #430297;
+            color: white;
+          }
+          
+          .fa-soundcloud {
+            background: #ff5500;
+            color: white;
+          }
+          
+          .fa-reddit {
+            background: #ff5700;
+            color: white;
+          }
+          
+          .fa-rss {
+            background: #ff6600;
+            color: white;
+          }
+    </style>        
 </head>
 <body>
-    <h1>Image Converter</h1>
-    <form id="uploadForm" action="/convert" method="post" enctype="multipart/form-data">
-        <input type="file" name="img" id="imgInput" accept="image/*" multiple required>
-        <button type="submit">Chuyển đổi và Tải về</button>
+
+    <!-- <nav class="navbar bg-body-tertiary">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="#">        <img src="logo.png" alt="Logo" style="width: 100px; height: 100px;">
+          </a>
+          <span class="navbar-brand mb-0 h1">Đổi ảnh sang WEBP</span>
+
+        </div>
+      </nav> -->
+      <nav class="navbar bg-dark border-bottom border-body navbar-expand-lg bg-body-tertiary"data-bs-theme="dark">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#"> <img src="logo.png" alt="Logo" style="width: 3.5em; height: 3.5em;"></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="/">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/outline">HTML PRO</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Pricing</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link disabled" aria-disabled="true">Disabled</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+    <h1>ĐỔI ẢNH WEBP HÀNG LOẠT TỰ ĐỘNG CHỈNH DUNG LƯỢNG <= 100KB ĐẲNG CẤP NHẤT VN</h1>
+    <h1> Bản thử nghiệm </h1>
+    <h2> Lưu ý: ảnh đã tối ưu dụng lương sao cho từ 90 -> 100kb, nếu có ảnh bị dưới mức 90kb là do ảnh gốc bị mờ nên chỉ chỉnh dung lượng tới đó là max</h2>
+    <div class="content">
+        <h2><strong>Hướng dẫn sử dụng :</strong></h2>
+<p><strong>B1:</strong> Chọn ảnh, c&oacute; thể chọn nhiều ảnh.</p>
+<p><strong>B2:</strong> Bấm chuyển đổi, đợi trong v&agrave;i gi&acirc;y</p>
+<p><strong>B3:</strong> Sau khi chuyển đổi, nếu up nhiều ảnh sẽ c&oacute; một file .zip được tải về, b&ecirc;n trong chưa c&aacute;c ảnh webp.</p>
+<p><strong>B4:</strong> HẾT.&nbsp;</p>
+
+
+    </div>
+    <form id="uploadForm2" action="/convert-single" method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="imgInput" class="form-label">Chọn ảnh để chuyển đổi:</label>
+            <input type="file" class="form-control" name="img" id="imgInput" accept="image/*" multiple required>
+        </div>
+        <button type="submit" class="btn btn-primary">Chuyển đổi sang WebP và Tải về</button>
     </form>
 
-    <div id="downloadLinks"></div>
+  </div>
+  <form id="uploadForm" action="/convert" method="post" enctype="multipart/form-data">
+      <div class="mb-3">
+          <label for="imgInput" class="form-label">Chọn nhiều ảnh để chuyển đổi:</label>
+          <input type="file" class="form-control" name="img" id="imgInput" accept="image/*" multiple required>
+      </div>
+      <button type="submit" class="btn btn-primary">Chuyển đổi sang WebP và Tải về</button>
+  </form>
+    <div id="loading">
+        <img src="loading.gif" alt="Loading...">
+    </div>
 
-    <script>
-        document.getElementById('uploadForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
-            const formData = new FormData(this);
-            const response = await fetch(this.action, {
-                method: 'POST',
-                body: formData
-            });
-            const data = await response.json(); // Assuming the server sends back an array of converted image URLs
-            const downloadLinksContainer = document.getElementById('downloadLinks');
-            downloadLinksContainer.innerHTML = ''; // Clear existing download links
-            data.forEach((imageUrl, index) => {
-                const downloadLink = document.createElement('a');
-                downloadLink.href = imageUrl;
-                downloadLink.download = `converted_image_${index + 1}.webp`; // Adjust the filename as needed
-                downloadLink.textContent = `Download Image ${index + 1}`;
-                downloadLinksContainer.appendChild(downloadLink);
-                downloadLinksContainer.appendChild(document.createElement('br'));
-            });
-        });
-    </script>
+
+
+
+
+
+
+    <footer >
+        <p>&copy; 2024 Đổi ảnh siu cấp vip pro</p>
+        <div id="author-info">
+            <img src="author.jpg" alt="Author">
+            <p>Tác giả: Danie Bu</p>
+            <p>Contact </p>
+            <a href="https://www.facebook.com/profile.php?id=100054234414227" class="fa fa-facebook"></a>
+            <a href="https://www.instagram.com/danbu_0208/" class="fa fa-instagram"></a>
+            <p><strong>Ủng hộ m&igrave;nh tại:</strong><br /><strong>MOMO: 0969727782</strong> (Đoàn Gia Phú)</p>
+        </div>
+    </div>
+    </footer>
+       
+    <script src="script.js"></script>
 </body>
 </html>
