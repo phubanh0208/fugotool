@@ -311,6 +311,8 @@ document.getElementById('clearFormatting').addEventListener('click', function() 
       });
 
       if (response.ok) {
+        document.getElementById('loading').style.display = 'none';
+
           // Nếu tải xuống thành công, tạo một liên kết để tải file zip
           const blob = await response.blob();
           const url = window.URL.createObjectURL(blob);
@@ -318,7 +320,6 @@ document.getElementById('clearFormatting').addEventListener('click', function() 
           a.href = url;
           a.download = 'images.zip';
           a.click();
-          document.getElementById('loading').style.display = 'none';
 
       } else {
           console.error('Failed to download images');
