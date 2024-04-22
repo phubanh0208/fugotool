@@ -6,11 +6,13 @@ const JSZip = require('jszip');
 const fs = require('fs');
 const slugify = require('slugify');
 const getSlug = require('speakingurl');
-
+const axios = require('axios');
+const cheerio = require('cheerio');
 const app = express();
 const port = (process.env.PORT ||3000);
 app.set('view engine', 'ejs'); // Thay 'ejs' bằng tên của view engine bạn sử dụng
 app.set('views', path.join(__dirname, 'views')); // Đường dẫn tới thư mục chứa các file view
+app.use(express.urlencoded({ extended: true }));
 
 app.use(express.static('public'));
 // Đường dẫn thư mục tạm thời để lưu trữ các ảnh tạm thời
@@ -95,7 +97,7 @@ app.post('/convert-single', upload.single('img'), async (req, res) => {
         if (!req.file) {
             return res.status(400).send('No file uploaded.');
         }
-        const lowercaseInput = req.body.slug.toLowerCase(); 
+        const lowercaseInput = req.body.slug2.toLowerCase(); 
         const slug = getSlug(lowercaseInput, { lang: 'vi' });
 
         const buffer = req.file.buffer;
@@ -186,12 +188,111 @@ app.post('/download-images', upload.none(), async (req, res) => {
         res.status(500).send('Failed to download and compress images');
     }
 });
+app.post('/internal', async (req, res) => {
+    const { url, keywords } = req.body;
+    console.log(req.body);
+    try {
+        const results = await searchRelatedKeywords(url, keywords.split(','));
+        res.json(results);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+async function searchRelatedKeywords(url, keywords) {
+    try {
+        // Khởi tạo mảng kết quả để lưu trữ các trang có tiêu đề liên quan
+        let results = [];
+        const rooturl =url;
+        // Khởi tạo tập hợp để lưu trữ các liên kết đã quét
+        const visitedLinks = new Set();
+        let links = [];
+        // Hàm đệ quy để crawl và tìm kiếm trên mỗi trang
+        async function crawlAndSearch(url) {
+            try {
+                // Kiểm tra xem liên kết đã được thăm trước đó chưa
+                if (visitedLinks.has(url)) {
+                    return;
+                }
+
+                // Thêm liên kết vào tập hợp đã thăm
+                visitedLinks.add(url);
+
+                // Lấy nội dung HTML của trang
+                const response = await axios.get(url);
+                if (response.status == 404) {
+                    // Nếu là 404, bỏ qua trang và kết thúc hàm
+                    console.log(`Page not found: ${url}`);
+                    return;
+                }
+                const $ = cheerio.load(response.data);
+
+                // Trích xuất tiêu đề từ trang hiện tại
+                const pageTitle = $('title').text();
+                if (!pageTitle) return;
+                // Kiểm tra xem tiêu đề có chứa từ khóa không
+                const foundKeywords = keywords.filter(keyword => new RegExp(keyword, 'i').test(pageTitle));
+
+                // Nếu tiêu đề chứa từ khóa, thêm thông tin trang vào mảng kết quả
+                if (foundKeywords.length > 0) {
+                    results.push({
+                        pageTitle: pageTitle,
+                        url: url,
+                        foundKeywords: foundKeywords
+                    });
+                }
+
+                // Trích xuất tất cả các liên kết từ trang hiện tại
+                
+                $('a').each((index, element) => {
+                    const link = $(element).attr('href');
+                    if (link) {
+                        // Kiểm tra nếu link bắt đầu bằng /
+                        if (link.startsWith('/') ) {
+                            let url2= rooturl.slice(0, -1);
+                            
+                            if (!visitedLinks.has(url2+link)) {
+                                links.push(url2+ link);
+                                console.log(url2+link);
+                            }
+                            
+                            // Gắn URL gốc vào trước link
+                            
+                        }
+                        // Kiểm tra xem liên kết có chứa URL gốc của trang web không
+            
+                    }
+                });
+
+                // Tìm kiếm trên mỗi liên kết thuộc cùng một trang web
+                for (const link of links) {
+                    // Tiếp tục quét các URL con
+                    await crawlAndSearch(link);
+                }
+            } catch (error) {
+                console.error('Error crawling page:', error);
+            }
+        }
+
+        // Bắt đầu crawl từ URL được cung cấp
+        await crawlAndSearch(url);
+
+        return results;
+    } catch (error) {
+        throw new Error('Failed to fetch page data');
+    }
+}
 
 app.get('/outline', (req, res) => {
     res.render('outline');
 });
 app.get('/', (req, res) => {
     res.render('index');
+});
+
+app.get('/internal', (req, res) => {
+    res.render('internal');
 });
 app.listen(process.env.PORT || 3000, () => {
     console.log(`Ứng dụng đang chạy tại http://localhost:${port}`);
